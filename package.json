@@ -1,0 +1,31 @@
+{
+  "name": "armet",
+  "version": "0.1.0",
+  "description": "Clean and modern framework for creating RESTful APIs.",
+  "main": "index.js",
+  "scripts": {
+    "test": "gulp",
+    "lint": "gulp lint",
+    "prepublish": "gulp build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/armet/node-armet.git"
+  },
+  "bugs": {
+    "url": "https://github.com/armet/node-armet/issues"
+  },
+  "homepage": "https://github.com/armet/node-armet",
+  "author": "Ryan Leckey <ryan@launchbadge.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "babel": "^5.6.7",
+    "babel-eslint": "^3.1.18",
+    "gulp": "^3.9.0",
+    "gulp-babel": "^5.1.0",
+    "gulp-eslint": "^0.14.0",
+    "gulp-load-plugins": "^1.0.0-rc.1",
+    "gulp-mocha": "^2.1.2",
+    "run-sequence": "^1.1.1"
+  }
+}
