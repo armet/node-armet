@@ -6,9 +6,9 @@
     "es6": true,
   },
   "rules": {
-    "strict": false,
-    "comma-dangle": false,
-    "no-underscore-dangle": false,
+    "strict": 0,
+    "comma-dangle": 0,
+    "no-underscore-dangle": 0,
     "indent": [2, 2],
     "brace-style": [2, "1tbs"],
     "comma-style": [2, "last"],
