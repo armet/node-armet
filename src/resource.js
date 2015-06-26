@@ -2,17 +2,18 @@ import Str from "underscore.string"
 import path from "path"
 import sql from "sql-bricks-postgres"
 import {db} from "bardo"
+import server from "./server"
 
 export class Resource {
-  static mount(server, base="/") {
+  static mount(base="/") {
     // Dasherize the name of this class
     let name = Str.dasherize(Str.camelize(this.name, true))
     let route = path.join(base, name)
 
     // NOTE: It'd be nice if resitfy supported a way to bind a handler to
     //       all methods
-    server.head(route, this.dispatch.bind(this))
-    server.get(route, this.dispatch.bind(this))
+    server.get().head(route, this.dispatch.bind(this))
+    server.get().get(route, this.dispatch.bind(this))
   }
 
   static dispatch(req, res, next) {

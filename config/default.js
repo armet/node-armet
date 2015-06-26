@@ -11,9 +11,4 @@ module.exports = {
       level: "trace"
     }
   },
-  armet: {
-    log: {
-      level: "info"
-    }
-  }
 }
