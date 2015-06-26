@@ -3,6 +3,7 @@ import restify from "restify"
 import cluster from "cluster"
 import config from "./config"
 import log from "./log"
+import {db} from "bardo"
 
 var server = null
 export function get() {
@@ -26,6 +27,26 @@ function runWorker() {
     }
   })
 }
+
+let gracefulExit = _.once(function() {
+  // Wait at most 25~ seconds for requests to finish and then forcibly
+  // terminate
+  var timeout = 25000
+  setTimeout(function() {
+    process.exit(1)
+  }, timeout).unref()
+
+  // Request restify to close gracefully
+  get().close(function() {
+    // Drain the database connection queue
+    db.quit().then(function() {
+      // If this is a worker; let the master know
+      if (cluster.worker) {
+        cluster.worker.disconnect()
+      }
+    })
+  })
+})
 
 export function run() {
   // Log initial information (ensuring to only print it once)
@@ -58,6 +79,10 @@ export function run() {
     // In development or test environments, run a single process
     runWorker()
   }
+
+  // Hook into termination and interrupt signals to gracefully exit
+  process.on("SIGTERM", gracefulExit)
+  process.on("SIGINT", gracefulExit)
 }
 
 export default {

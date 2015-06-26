@@ -10,9 +10,9 @@ export function requireAll(pattern) {
   glob.glob(pattern, {cwd}, function(err, filenames) {
     if (err) throw err
     for (let filename of filenames) {
-      if (Str.endsWith(filename, "index.js")) {
+      if (!Str.endsWith(filename, "index.js")) {
         var {dir, name} = path.parse(filename)
-        var modName = path.join(dir, name)
+        var modName = path.join(cwd, path.join(dir, name))
         require(modName)
       }
     }

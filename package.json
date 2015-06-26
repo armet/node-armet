@@ -40,6 +40,7 @@
     "glob": "^5.0.10",
     "lodash": "^3.9.3",
     "restify": "^3.0.3",
+    "seppuku": "^0.1.6",
     "sql-bricks-postgres": "^0.4.1",
     "underscore.string": "^3.1.1"
   }
