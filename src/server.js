@@ -1,4 +1,5 @@
 import _ from "lodash"
+import os from "os"
 import restify from "restify"
 import cluster from "cluster"
 import config from "./config"
@@ -28,13 +29,15 @@ function runWorker() {
   })
 }
 
-let gracefulExit = _.once(function() {
+function gracefulExit() {
   // Wait at most 25~ seconds for requests to finish and then forcibly
   // terminate
   var timeout = 25000
+  /* eslint-disable */
   setTimeout(function() {
     process.exit(1)
   }, timeout).unref()
+  /* eslint-enable */
 
   // Request restify to close gracefully
   get().close(function() {
@@ -46,7 +49,20 @@ let gracefulExit = _.once(function() {
       }
     })
   })
-})
+}
+
+let terminateCount = 0
+function onTerminate() {
+  if (terminateCount === 0) {
+    terminateCount += 1
+    gracefulExit()
+  } else {
+    // Force exit immediately
+    /* eslint-disable */
+    process.exit(1)
+    /* eslint-enable */
+  }
+}
 
 export function run() {
   // Log initial information (ensuring to only print it once)
@@ -81,8 +97,8 @@ export function run() {
   }
 
   // Hook into termination and interrupt signals to gracefully exit
-  process.on("SIGTERM", gracefulExit)
-  process.on("SIGINT", gracefulExit)
+  process.on("SIGTERM", onTerminate)
+  process.on("SIGINT", onTerminate)
 }
 
 export default {
