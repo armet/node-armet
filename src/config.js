@@ -4,7 +4,7 @@ var config = require('config');
 // Declare default configuration
 let defaults = {
   // Name of the API server (for the `Server` response header)
-  name: "Armet",
+  name: config.has("name") ? config.get("name") : "Armet",
 
   // Enable cluster by-default if we're in production
   cluster: (process.env.NODE_ENV === "production"),
