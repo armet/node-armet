@@ -29,6 +29,9 @@ export class Resource {
     getServer().head(route, this.dispatch.bind(this))
     getServer().get(route, this.dispatch.bind(this))
     getServer().post(route, this.dispatch.bind(this))
+    getServer().patch(route, this.dispatch.bind(this))
+    getServer().put(route, this.dispatch.bind(this))
+    getServer().del(route, this.dispatch.bind(this))
   }
 
   static dispatch(req, res, next) {
@@ -53,12 +56,9 @@ export class Resource {
     Promise.resolve(resource.initialize(req)).then(function() {
       // Execute the specific method handler for this
       // resource, method combination
-      Promise.resolve(handler.call(resource, req, res)).then(function() {
+      Promise.resolve(handler.call(resource, req, res, next)).then(function() {
         // Close the active database context
-        db.end().then(function() {
-          // Get out and let resitfy known we're done
-          return next()
-        })
+        db.end()
       }).catch(except)
     }).catch(except)
   }
@@ -70,14 +70,6 @@ export class Resource {
     // NOTE: To be overridden by a derived class
   }
 
-  read(/* req */) {
-    // NOTE: To be overridden by a derived class
-  }
-
-  create(/* req, item */) {
-    // NOTE: To be overridden by a derived class
-  }
-
   prepare(req, item) {
     // NOTE: To be overridden by a derived class
     return item
@@ -86,49 +78,6 @@ export class Resource {
   clean(req, item) {
     // NOTE: To be overridden by a derived class
     return item
-  }
-
-  post(req, res) {
-    return new Promise((resolve) => {
-      // Request the creation statement
-      Promise.resolve(this.create(clean(req, item))).then((stmt) => {
-        stmt = stmt.returning("*")
-
-        // Execute the creation statement
-        db.execute(stmt).then((rows) => {
-          // TODO: Handle batch-creation
-          let row = rows[0]
-
-          // Send back the response to the client
-          res.send(201, prepare(req, row))
-          return resolve()
-        })
-      })
-    })
-  }
-
-  get(req, res) {
-    return new Promise((resolve) => {
-      // Request the primary statement
-      Promise.resolve(this.read(req)).then((stmt) => {
-        stmt = stmt.toParams()
-
-        // Get the `total count` of items
-        let countStmt = sql.select("COUNT(*)").from(`(${stmt.text}) _`)
-        db.execute(countStmt, stmt.values).then((rows) => {
-          let count = rows[0].count
-
-          // Execute the primary statement and prepare the items
-          db.execute(stmt.text, stmt.values).then((rows) => {
-            let items = rows.map(this.prepare.bind(undefined, req))
-
-            // Send back the response to the client
-            res.send(200, items)
-            return resolve()
-          })
-        })
-      })
-    })
   }
 }
 
