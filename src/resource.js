@@ -1,9 +1,9 @@
 import _ from "lodash"
 import Str from "underscore.string"
 import path from "path"
-import sql from "sql-bricks-postgres"
+// import sql from "sql-bricks-postgres"
 import {db} from "bardo"
-import {get as getServer} from "./server"
+import route from "./route"
 
 export function mount(path) {
   function decorator(path, cls) {
@@ -13,9 +13,9 @@ export function mount(path) {
 
   if (_.isString(path)) {
     return decorator.bind(undefined, path)
-  } else {
-    return decorator("/", cls)
   }
+
+  return decorator("/", path)
 }
 
 // TODO: Split up `Resource` and `ModelResource`
@@ -23,16 +23,16 @@ export class Resource {
   static mount(base="/") {
     // Dasherize the name of this class
     let name = Str.dasherize(Str.camelize(this.name, true))
-    let route = path.join(base, name)
+    let url = path.join(base, name)
 
     // NOTE: It'd be nice if resitfy supported a way to bind a handler to
     //       all methods
-    getServer().head(route, this.dispatch.bind(this))
-    getServer().get(route, this.dispatch.bind(this))
-    getServer().post(route, this.dispatch.bind(this))
-    getServer().patch(route, this.dispatch.bind(this))
-    getServer().put(route, this.dispatch.bind(this))
-    getServer().del(route, this.dispatch.bind(this))
+    route.head(url, this.dispatch.bind(this))
+    route.get(url, this.dispatch.bind(this))
+    route.post(url, this.dispatch.bind(this))
+    route.patch(url, this.dispatch.bind(this))
+    route.put(url, this.dispatch.bind(this))
+    route.del(url, this.dispatch.bind(this))
   }
 
   static dispatch(req, res, next) {
@@ -48,8 +48,7 @@ export class Resource {
 
     function except(err) {
       // TODO: Do something useful with this exception
-      throw err;
-      return next(false);
+      throw err
     }
 
     // Initialize the resource object; gives the resource
