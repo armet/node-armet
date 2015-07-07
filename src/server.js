@@ -57,6 +57,8 @@ export function get() {
 
     // TODO: Re-direct on case mismatch or trailing slash mismatch
 
+    // TODO: Setup CORS
+
     // Establish middleware (built-in)
     server.use(restify.acceptParser(server.acceptable))
     server.use(restify.queryParser())
@@ -78,7 +80,7 @@ function runWorker() {
   // Start listening ...
   var port = config.get("port")
   get().listen(port, () => {
-    if ((cluster.isMaster || process.env.CHILD_ID === "1")
+    if ((cluster.isMaster || process.env.CHILD_ID === "0")
           && process.env.NODE_ENV !== "test") {
       log.warn("Listening at %s", get().url)
     }
@@ -150,11 +152,11 @@ export function run() {
   } else {
     // In development or test environments, run a single process
     runWorker()
-  }
 
-  // Hook into termination and interrupt signals to gracefully exit
-  process.on("SIGTERM", onTerminate)
-  process.on("SIGINT", onTerminate)
+    // Hook into termination and interrupt signals to gracefully exit
+    process.on("SIGTERM", onTerminate)
+    process.on("SIGINT", onTerminate)
+  }
 }
 
 export default {
