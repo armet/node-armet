@@ -103,7 +103,12 @@ function gracefulExit() {
     db.quit().then(function() {
       // If this is a worker; let the master know
       if (cluster.worker) {
-        cluster.worker.disconnect()
+        cluster.worker.kill()
+      } else {
+        // The world has been cleaned; exit now
+        /* eslint-disable */
+        process.exit(128)
+        /* eslint-enable */
       }
     })
   })
@@ -117,7 +122,7 @@ function onTerminate() {
   } else {
     // Force exit immediately
     /* eslint-disable */
-    process.exit(1)
+    process.exit(128)
     /* eslint-enable */
   }
 }
@@ -139,15 +144,31 @@ export function run() {
       cluster.fork({"CHILD_ID": i})
     }
 
-    // Setup an `exit` handler to restart the workers
-    // NOTE: This shouldn't be able to happen because of the
-    //  request domains, but if something goes wrong with that...
-    cluster.on("exit", function(worker) {
+    // Hook into termination and interrupt signals to gracefully stop
+    cluster.on("disconnect", _.after(concurrency, function() {
+      /* eslint-disable */
+      process.exit(128);
+      /* eslint-enable */
+    }))
+
+    // Restart the worker that exited pre-maturely
+    var terminating = false;
+    cluster.on('exit', function(worker) {
+      if (terminating) return
+
       log.warn(`worker ${worker.process.pid} has exited, restarting ...`)
 
       // Restart the worker
       cluster.fork()
     })
+
+    // Ignore termination signals on master
+    function ignore() {
+      terminating = true;
+    }
+
+    process.on("SIGTERM", ignore)
+    process.on("SIGINT", ignore)
 
   } else {
     // In development or test environments, run a single process
