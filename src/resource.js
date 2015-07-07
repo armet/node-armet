@@ -29,10 +29,15 @@ export class Resource {
     //       all methods
     route.head(url, this.dispatch.bind(this))
     route.get(url, this.dispatch.bind(this))
+    route.get(path.join(url, ":id"), this.dispatch.bind(this))
     route.post(url, this.dispatch.bind(this))
+    route.post(path.join(url, ":id"), this.dispatch.bind(this))
     route.patch(url, this.dispatch.bind(this))
+    route.patch(path.join(url, ":id"), this.dispatch.bind(this))
     route.put(url, this.dispatch.bind(this))
+    route.put(path.join(url, ":id"), this.dispatch.bind(this))
     route.del(url, this.dispatch.bind(this))
+    route.del(path.join(url, ":id"), this.dispatch.bind(this))
   }
 
   static dispatch(req, res, next) {
