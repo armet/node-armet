@@ -1,5 +1,9 @@
 import {get as getServer} from "./server"
 
+export function head(path, ...handlers) {
+  getServer().head(path, ...handlers)
+}
+
 export function get(path, ...handlers) {
   getServer().get(path, ...handlers)
 }
@@ -21,6 +25,7 @@ export function del(path, ...handlers) {
 }
 
 export default {
+  head,
   get,
   post,
   put,

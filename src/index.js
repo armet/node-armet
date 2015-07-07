@@ -10,6 +10,7 @@ export let configure = config.configure
 export let run = server.run
 export let util = util_
 
+export let head = route.head
 export let get = route.get
 export let post = route.post
 export let put = route.put
@@ -22,6 +23,7 @@ export default {
   configure,
   run,
   util,
+  head,
   get,
   post,
   put,
