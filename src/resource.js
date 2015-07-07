@@ -27,22 +27,47 @@ export class Resource {
 
     // NOTE: It'd be nice if resitfy supported a way to bind a handler to
     //       all methods
-    route.head(url, this.dispatch.bind(this))
-    route.get(url, this.dispatch.bind(this))
-    route.get(path.join(url, ":id"), this.dispatch.bind(this))
-    route.post(url, this.dispatch.bind(this))
-    route.post(path.join(url, ":id"), this.dispatch.bind(this))
-    route.patch(url, this.dispatch.bind(this))
-    route.patch(path.join(url, ":id"), this.dispatch.bind(this))
-    route.put(url, this.dispatch.bind(this))
-    route.put(path.join(url, ":id"), this.dispatch.bind(this))
-    route.del(url, this.dispatch.bind(this))
-    route.del(path.join(url, ":id"), this.dispatch.bind(this))
+    let dispatch = this.dispatch.bind(this)
+    let methods = ["head", "get", "post", "put", "patch", "del"]
+    for (let method of methods) {
+      route[method](url, dispatch)
+      route[method](path.join(url, ":id"), dispatch)
+    }
   }
 
   static dispatch(req, res, next) {
     let resource = new this()
 
+    // Collect `before` and `after` methods
+    let before = []
+    let after = []
+
+    // Add the local `after` first
+    if (resource.after != null) {
+      after.push(resource.after.bind(resource))
+    }
+
+    // TODO: Collect `before` and `after` from mixins
+    for (let mix of (resource.mixins || [])) {
+      if (mix.prototype != null) {
+        mix = mix.prototype
+      }
+
+      if (mix.before != null) {
+        before.push(mix.before.bind(resource))
+      }
+
+      if (mix.after != null) {
+        after.push(mix.after.bind(resource))
+      }
+    }
+
+    // Add the local `before` last
+    if (resource.before != null) {
+      before.push(resource.before.bind(resource))
+    }
+
+    // Determine an appropriate handler method
     let handler = resource[req.method.toLowerCase()]
     if (handler == null) {
       // No handler found: Method not allowed
@@ -51,28 +76,45 @@ export class Resource {
       return next(false)
     }
 
-    function except(err) {
-      // TODO: Do something useful with this exception
-      throw err
+    let beforeIndex = 0
+    let afterIndex = 0
+    let routed = false
+    let cleanup = false
+
+    function finalize() {
+      db.end()
+      return next()
     }
 
-    // Initialize the resource object; gives the resource
-    // author a moment to prepare
-    Promise.resolve(resource.initialize(req)).then(function() {
-      // Execute the specific method handler for this
-      // resource, method combination
-      Promise.resolve(handler.call(resource, req, res, next)).then(function() {
-        // Close the active database context
-        db.end()
-      }).catch(except)
-    }).catch(except)
+    let nextFn = (function() {
+      // Determine what method to call next
+      let method = null
+      if (beforeIndex < before.length) {
+        method = before[beforeIndex]
+        beforeIndex += 1
+      } else if (!routed) {
+        method = handler
+        routed = true
+      } else if (afterIndex < after.length) {
+        method = after[afterIndex]
+        afterIndex += 1
+      } else if (!cleanup) {
+        method = finalize
+        cleanup = false
+      }
+
+      // Call the method
+      Promise.resolve(method.call(this, req, res, nextFn)).catch(function(err) {
+        // Raise the error upwards (if this was an async method)
+        throw err
+      })
+    }).bind(resource)
+
+    nextFn()
   }
 
   constructor() {
-  }
-
-  initialize(/* req */) {
-    // NOTE: To be overridden by a derived class
+    // NOTE: Does nothing (for the moment)
   }
 
   prepare(req, row) {
