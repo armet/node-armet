@@ -2,7 +2,7 @@ import _ from "lodash"
 import Str from "underscore.string"
 import path from "path"
 // import sql from "sql-bricks-postgres"
-import {db} from "bardo"
+import {db, util} from "bardo"
 import route from "./route"
 
 export function mount(path) {
@@ -75,14 +75,30 @@ export class Resource {
     // NOTE: To be overridden by a derived class
   }
 
-  prepare(req, item) {
-    // NOTE: To be overridden by a derived class
-    return item
+  prepare(req, row) {
+    // If only one parameter is passed; assume the one parameter is the `row`
+    if (row == null) row = req
+
+    // NOTE: Could be overridden by a derived class
+    return this.serialize(row)
   }
 
   clean(req, item) {
-    // NOTE: To be overridden by a derived class
-    return item
+    // If only one parameter is passed; assume the one parameter is the `item`
+    if (item == null) item = req
+
+    // NOTE: Could be overridden by a derived class
+    return this.deserialize(item)
+  }
+
+  // Transform from `a__b_c` into `a.bC`
+  serialize(row) {
+    return util.serialize(row)
+  }
+
+  // Transform from `a.bC` into `a__b_c`
+  deserialize(item) {
+    return util.deserialize(item)
   }
 }
 
