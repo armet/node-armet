@@ -142,7 +142,7 @@ export class Resource {
   }
 
   validate(item) {
-    return validate(item, this.schema)
+    return validate(item, (this.schema || this.constructor.schema))
   }
 }
 
