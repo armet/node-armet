@@ -21,3 +21,6 @@ for (let name of Object.keys(errors)) {
     module.exports[name] = errors[name]
   }
 }
+
+module.exports.validators = require("./validators")
+module.exports.validate = require("./validate")

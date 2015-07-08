@@ -7,6 +7,15 @@ export function HTTPError(status, body) {
 
 util.inherits(HTTPError, Error)
 
+export function ValidationError(message, code="Invalid", status="422") {
+  this.message = message
+  this.code = code
+  this.status = status
+}
+
+util.inherits(ValidationError, Error)
+
 export default {
-  HTTPError
+  HTTPError,
+  ValidationError
 }

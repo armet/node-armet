@@ -29,7 +29,9 @@ gulp.task("test", function() {
 })
 
 gulp.task('watch', function() {
-  gulp.watch(["./src/**/*.js"], ["build"])
+  gulp.watch(["./src/**/*.js"], function() {
+    runSequence("build", "dist")
+  })
 })
 
 gulp.task("clean", function(cb) {
@@ -42,7 +44,7 @@ gulp.task("dist", function() {
 })
 
 gulp.task("default", function(cb) {
-  return runSequence("build", "test", cb)
+  return runSequence("build", "dist", "watch", cb)
 })
 
 function bump(importance) {
