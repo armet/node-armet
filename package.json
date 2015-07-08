@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "gulp",
-    "lint": "gulp lint",
-    "prepublish": "gulp build && gulp dist"
+    "lint": "gulp lint"
   },
   "repository": {
     "type": "git",

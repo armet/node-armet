@@ -72,6 +72,18 @@ function release(importance) {
   })
 }
 
-gulp.task("release:minor", _.partial(release, "minor"));
-gulp.task("release:major", _.partial(release, "major"));
-gulp.task("release:patch", _.partial(release, "patch"));
+gulp.task("_release:minor", _.partial(release, "minor"))
+gulp.task("_release:major", _.partial(release, "major"))
+gulp.task("_release:patch", _.partial(release, "patch"))
+
+gulp.task("release:major", function(cb) {
+  runSequence("build", "dist", "_release:major", cb)
+})
+
+gulp.task("release:minor", function(cb) {
+  runSequence("build", "dist", "_release:minor", cb)
+})
+
+gulp.task("release:patch", function(cb) {
+  runSequence("build", "dist", "_release:patch", cb)
+})
