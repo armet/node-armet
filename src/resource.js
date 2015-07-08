@@ -124,11 +124,17 @@ export class Resource {
   }
 
   prepare(req, row) {
+    // NOTE: If only one parameter is passed; assume it to be `row`
+    if (row == null) row = req
+
     // NOTE: Could be overridden by a derived class
     return row
   }
 
   clean(req, item) {
+    // NOTE: If only one parameter is passed; assume it to be `item`
+    if (item == null) item = req
+
     // NOTE: Could be overridden by a derived class
     return item
   }
