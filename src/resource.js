@@ -4,6 +4,7 @@ import path from "path"
 // import sql from "sql-bricks-postgres"
 import {db} from "bardo"
 import route from "./route"
+import validate from "./validate"
 
 export function mount(path) {
   function decorator(path, cls) {
@@ -138,6 +139,10 @@ export class Resource {
 
     // NOTE: Could be overridden by a derived class
     return item
+  }
+
+  validate(item) {
+    return validate(item, this.schema)
   }
 }
 
