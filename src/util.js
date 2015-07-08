@@ -18,3 +18,7 @@ export function requireAll(pattern) {
     }
   })
 }
+
+export default {
+  requireAll
+}

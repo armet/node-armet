@@ -33,39 +33,40 @@ export class Resource {
       route[method](url, dispatch)
       route[method](path.join(url, ":id"), dispatch)
     }
-  }
-
-  static dispatch(req, res, next) {
-    let resource = new this()
 
     // Collect `before` and `after` methods
-    let before = []
-    let after = []
+    // NOTE: It'd be nice if there was to do metaclass-style initialization
+    this._before = []
+    this._after = []
 
     // Add the local `after` first
-    if (resource.after != null) {
-      after.push(resource.after.bind(resource))
+    if (this.prototype.after != null) {
+      this._after.push(this.prototype.after)
     }
 
     // TODO: Collect `before` and `after` from mixins
-    for (let mix of (resource.mixins || [])) {
+    for (let mix of (this.mixins || [])) {
       if (mix.prototype != null) {
         mix = mix.prototype
       }
 
       if (mix.before != null) {
-        before.push(mix.before.bind(resource))
+        this._before.push(mix.before)
       }
 
       if (mix.after != null) {
-        after.push(mix.after.bind(resource))
+        this._after.push(mix.after)
       }
     }
 
     // Add the local `before` last
-    if (resource.before != null) {
-      before.push(resource.before.bind(resource))
+    if (this.prototype.before != null) {
+      this._before.push(this.prototype.before)
     }
+  }
+
+  static dispatch(req, res, next) {
+    let resource = new this()
 
     // Determine an appropriate handler method
     let handler = resource[req.method.toLowerCase()]
@@ -76,40 +77,45 @@ export class Resource {
       return next(false)
     }
 
+    let cls = this
     let beforeIndex = 0
     let afterIndex = 0
     let routed = false
     let cleanup = false
 
     function finalize() {
+      // TODO: This also happens in the uncaughtException handler;
+      //       perhaps there is a way to generalize?
       db.end()
       return next()
     }
 
-    let nextFn = (function() {
+    let nextFn = req.domain.bind((function() {
       // Determine what method to call next
       let method = null
-      if (beforeIndex < before.length) {
-        method = before[beforeIndex]
+      if (beforeIndex < cls._before.length) {
+        method = cls._before[beforeIndex]
         beforeIndex += 1
       } else if (!routed) {
         method = handler
         routed = true
-      } else if (afterIndex < after.length) {
-        method = after[afterIndex]
+      } else if (afterIndex < cls._after.length) {
+        method = cls._after[afterIndex]
         afterIndex += 1
       } else if (!cleanup) {
         method = finalize
         cleanup = false
       }
 
+      // Bind the method to the request domain
+      method = req.domain.bind(method)
+
       // Call the method
       Promise.resolve(method.call(this, req, res, nextFn)).catch(function(err) {
         // Raise the error upwards (if this was an async method)
         throw err
       })
-    }).bind(resource)
-
+    }).bind(resource))
     nextFn()
   }
 

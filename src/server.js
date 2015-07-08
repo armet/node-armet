@@ -1,3 +1,5 @@
+import shortid from "shortid"
+import microtime from "microtime"
 import _ from "lodash"
 import os from "os"
 import restify from "restify"
@@ -5,6 +7,7 @@ import cluster from "cluster"
 import config from "./config"
 import log from "./log"
 import {db} from "bardo"
+import {HTTPError} from "./errors"
 
 // TODO: Should this move elsewhere?
 function parseObjectReference(req, res, next) {
@@ -47,12 +50,62 @@ function parseObjectReference(req, res, next) {
   return next()
 }
 
+function trace(req, statusCode) {
+  let elapsed = +((microtime.now() - req.startedAt) / 1000).toFixed(2)
+  if (config.get("trace")) {
+    // Log the request latency
+    var level = statusCode >= 500 ? "error" : "info"
+    req.log[level]({elapsed: `${elapsed}ms`}, "%s %s -> %s",
+      req.method, req.path(), statusCode)
+  }
+}
+
+function uncaughtException(req, res, route, err) {
+  let statusCode = 500
+  let body = null
+
+  // Release the database connection (if it has been acquired)
+  Promise.resolve(db.end()).then(function() {
+    if (res.headersSent) {
+      return
+    }
+
+    if (err instanceof HTTPError) {
+      // Yes return the proper validation error
+      statusCode = err.statusCode
+      body = err.body
+    } else {
+      // Log the exception
+      log.error(err)
+    }
+
+    // Trace the request
+    trace(req, statusCode)
+
+    // Send the error response back to the client
+    res.send(statusCode, body)
+  })
+}
+
 var server = null
 export function get() {
   if (server == null) {
     // Create "restify" server object (if has not yet been created)
     server = restify.createServer({
       name: config.get("name"),
+    })
+
+    // Setup a request logger (to both log and time requests)
+    server.pre(function(req, res, next) {
+      // Bind the logger to the request
+      // var reqId = shortid.generate()
+      req.id = shortid.generate()
+      req.log = log.child({"req_id": req.id})
+
+      // Store the start time for the request
+      req.startedAt = microtime.now()
+
+      return next()
     })
 
     // TODO: Re-direct on case mismatch or trailing slash mismatch
@@ -71,6 +124,14 @@ export function get() {
 
     // Setup a body parser to explode field references as x[y][z] to x.y.z
     server.use(parseObjectReference)
+
+    // Setup a request exception handler
+    server.on("uncaughtException", uncaughtException)
+
+    // Trace the request
+    server.on("after", function(req, res) {
+      trace(req, res.statusCode)
+    })
   }
 
   return server
@@ -152,7 +213,7 @@ export function run() {
     }))
 
     // Restart the worker that exited pre-maturely
-    var terminating = false;
+    var terminating = false
     cluster.on('exit', function(worker) {
       if (terminating) return
 
@@ -164,7 +225,7 @@ export function run() {
 
     // Ignore termination signals on master
     function ignore() {
-      terminating = true;
+      terminating = true
     }
 
     process.on("SIGTERM", ignore)

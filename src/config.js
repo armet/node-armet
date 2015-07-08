@@ -14,7 +14,10 @@ let defaults = {
   port: 9090,
 
   // Default log-level
-  log: "info"
+  log: "info",
+
+  // Trace each API request (yes/no)
+  trace: (process.env.NODE_ENV !== "test"),
 }
 
 // Setup default configuration

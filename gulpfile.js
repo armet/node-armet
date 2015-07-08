@@ -28,9 +28,7 @@ gulp.task("test", function() {
 })
 
 gulp.task('watch', function() {
-  return gulp.src('src/**/*.js')
-    .pipe($.watch('src/**/*.js'))
-    .pipe(gulp.dest('lib'));
+  gulp.watch(["./src/**/*.js"], ["build"])
 })
 
 gulp.task("default", function(cb) {
