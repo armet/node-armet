@@ -1,8 +1,8 @@
 require("babel/register")
 
-var pkg = require("./package.json")
 var _ = require("lodash")
 var gulp = require("gulp")
+var del = require("del")
 var $ = require("gulp-load-plugins")()
 var runSequence = require("run-sequence")
 
@@ -32,11 +32,13 @@ gulp.task('watch', function() {
   gulp.watch(["./src/**/*.js"], ["build"])
 })
 
+gulp.task("clean", function(cb) {
+  return del(["dist"], cb)
+})
+
 gulp.task("dist", function() {
-  return gulp.src(['lib/*', 'package.json', 'LICENSE', 'README.md'])
-    .pipe($.tar(`armet-${pkg.version}.tar`))
-    .pipe($.gzip())
-    .pipe(gulp.dest('dist'));
+  return gulp.src(["lib/*", "package.json", "LICENSE", "README.md"])
+    .pipe(gulp.dest("dist"))
 })
 
 gulp.task("default", function(cb) {
@@ -50,7 +52,7 @@ function release(importance) {
 
     // Bump version on the package.json
     .pipe($.bump({type: importance}))
-    .pipe(gulp.dest('./'))
+    .pipe(gulp.dest("./"))
 
     // Commit the changes
     .pipe($.git.commit("Bump version"))
@@ -62,7 +64,7 @@ function release(importance) {
       $.git.push("origin", "master", {args: "--follow-tags"}, function() {
         gulp.src("")
           .pipe($.shell([
-            `npm publish ./dist/armet-${require("./package.json").version}.tar.gz`
+            `npm publish ./dist`
           ]))
           .on("end", function() {
             resolve()
@@ -77,13 +79,13 @@ gulp.task("_release:major", _.partial(release, "major"))
 gulp.task("_release:patch", _.partial(release, "patch"))
 
 gulp.task("release:major", function(cb) {
-  runSequence("build", "dist", "_release:major", cb)
+  runSequence("build", "dist", "_release:major", "clean", cb)
 })
 
 gulp.task("release:minor", function(cb) {
-  runSequence("build", "dist", "_release:minor", cb)
+  runSequence("build", "dist", "_release:minor", "clean", cb)
 })
 
 gulp.task("release:patch", function(cb) {
-  runSequence("build", "dist", "_release:patch", cb)
+  runSequence("build", "dist", "_release:patch", "clean", cb)
 })
