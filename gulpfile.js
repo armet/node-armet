@@ -62,7 +62,7 @@ function release(importance) {
       $.git.push("origin", "master", {args: "--follow-tags"}, function() {
         gulp.src("")
           .pipe($.shell([
-            `npm publish dist/armet-${require("./package.json").version}`
+            `npm publish ./dist/armet-${require("./package.json").version}`
           ]))
           .on("end", function() {
             resolve()
