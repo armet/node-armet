@@ -2,11 +2,11 @@
   "name": "armet",
   "version": "0.4.2",
   "description": "Clean and modern framework for creating RESTful APIs.",
-  "main": "lib/index.js",
+  "main": "index.js",
   "scripts": {
     "test": "gulp",
     "lint": "gulp lint",
-    "prepublish": "gulp build"
+    "prepublish": "gulp build && gulp dist"
   },
   "repository": {
     "type": "git",
@@ -27,10 +27,12 @@
     "gulp-bump": "^0.3.1",
     "gulp-eslint": "^0.14.0",
     "gulp-git": "^1.2.4",
+    "gulp-gzip": "^1.1.0",
     "gulp-load-plugins": "^1.0.0-rc.1",
     "gulp-mocha": "^2.1.2",
     "gulp-shell": "^0.4.2",
     "gulp-tag-version": "^1.2.1",
+    "gulp-tar": "^1.4.0",
     "run-sequence": "^1.1.1"
   },
   "dependencies": {

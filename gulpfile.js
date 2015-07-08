@@ -1,5 +1,6 @@
 require("babel/register")
 
+var pkg = require("./package.json")
 var _ = require("lodash")
 var gulp = require("gulp")
 var $ = require("gulp-load-plugins")()
@@ -29,6 +30,13 @@ gulp.task("test", function() {
 
 gulp.task('watch', function() {
   gulp.watch(["./src/**/*.js"], ["build"])
+})
+
+gulp.task("dist", function() {
+  return gulp.src(['lib/*', 'package.json', 'LICENSE', 'README.md'])
+    .pipe($.tar(`armet-${pkg.version}.tar`))
+    .pipe($.gzip())
+    .pipe(gulp.dest('dist'));
 })
 
 gulp.task("default", function(cb) {
