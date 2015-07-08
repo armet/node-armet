@@ -45,7 +45,7 @@ gulp.task("default", function(cb) {
   return runSequence("build", "test", cb)
 })
 
-function release(importance) {
+function bump(importance) {
   return new Promise(function(resolve) {
     // Select package.json
     gulp.src(["package.json"])
@@ -61,31 +61,35 @@ function release(importance) {
     .pipe($.tagVersion())
 
     .on("end", function() {
-      $.git.push("origin", "master", {args: "--follow-tags"}, function() {
-        gulp.src("")
-          .pipe($.shell([
-            `npm publish ./dist`
-          ]))
-          .on("end", function() {
-            resolve()
-          })
-      })
+      resolve()
     })
   })
 }
 
-gulp.task("_release:minor", _.partial(release, "minor"))
-gulp.task("_release:major", _.partial(release, "major"))
-gulp.task("_release:patch", _.partial(release, "patch"))
+gulp.task("release", function(cb) {
+  $.git.push("origin", "master", {args: "--follow-tags"}, function() {
+    gulp.src("")
+      .pipe($.shell([
+        `npm publish ./dist`
+      ]))
+      .on("end", function() {
+        cb()
+      })
+  })
+})
+
+gulp.task("bump:minor", _.partial(bump, "minor"))
+gulp.task("bump:major", _.partial(bump, "major"))
+gulp.task("bump:patch", _.partial(bump, "patch"))
 
 gulp.task("release:major", function(cb) {
-  runSequence("build", "dist", "_release:major", "clean", cb)
+  runSequence("build", "bump:major", "dist", "release", "clean", cb)
 })
 
 gulp.task("release:minor", function(cb) {
-  runSequence("build", "dist", "_release:minor", "clean", cb)
+  runSequence("build", "bump:minor", "dist", "release", "clean", cb)
 })
 
 gulp.task("release:patch", function(cb) {
-  runSequence("build", "dist", "_release:patch", "clean", cb)
+  runSequence("build", "bump:patch", "dist", "release", "clean", cb)
 })
