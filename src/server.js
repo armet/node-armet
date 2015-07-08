@@ -64,27 +64,31 @@ function uncaughtException(req, res, route, err) {
   let statusCode = 500
   let body = null
 
-  // Release the database connection (if it has been acquired)
-  Promise.resolve(db.end()).then(function() {
-    if (res.headersSent) {
-      return
-    }
+  function inner() {
+    // Release the database connection (if it has been acquired)
+    Promise.resolve(db.end()).then(function() {
+      if (res.headersSent) {
+        return
+      }
 
-    if (err instanceof HTTPError) {
-      // Yes return the proper validation error
-      statusCode = err.statusCode
-      body = err.body
-    } else {
-      // Log the exception
-      log.error(err)
-    }
+      if (err instanceof HTTPError) {
+        // Yes return the proper validation error
+        statusCode = err.statusCode
+        body = err.body
+      } else {
+        // Log the exception
+        log.error(err)
+      }
 
-    // Trace the request
-    trace(req, statusCode)
+      // Trace the request
+      trace(req, statusCode)
 
-    // Send the error response back to the client
-    res.send(statusCode, body)
-  })
+      // Send the error response back to the client
+      res.send(statusCode, body)
+    })
+  }
+
+  req.domain.run(inner)
 }
 
 var server = null

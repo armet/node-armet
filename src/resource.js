@@ -86,8 +86,9 @@ export class Resource {
     function finalize() {
       // TODO: This also happens in the uncaughtException handler;
       //       perhaps there is a way to generalize?
-      db.end()
-      return next()
+      Promise.resolve(db.end()).then(function() {
+        return next()
+      })
     }
 
     let nextFn = req.domain.bind((function() {
