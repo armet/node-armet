@@ -141,8 +141,10 @@ export class Resource {
     return item
   }
 
-  validate(item) {
-    return validate(item, (this.schema || this.constructor.schema))
+  validate(item, schema=null) {
+    // Use the schema provided on the instance if one is not provided
+    schema = schema != null ? schema : (this.schema || this.constructor.schema)
+    return validate(item, schema)
   }
 }
 
