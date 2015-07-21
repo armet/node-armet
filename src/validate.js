@@ -46,7 +46,7 @@ export default async function validate(
         // If we have an object, we need to recurse into this
         // sub-object for validation
         if (_.isPlainObject(fn)) {
-          result[key] = await validate(val, fn, context, _rootItem, key)
+          result[key] = await validate(val, fn, context, result, key)
         } else if (fn === true) {
           // No validation is performed; pass-through to the result (only
           // if it isn't undefined)
