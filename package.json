@@ -1,6 +1,6 @@
 {
   "name": "armet",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Clean and modern framework for creating RESTful APIs.",
   "main": "index.js",
   "scripts": {
