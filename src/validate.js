@@ -63,7 +63,7 @@ export default async function validate(
         }
 
         if (err instanceof HTTPError) {
-          status = err.status
+          status = err.statusCode
           errors[key] = err.body
           break
         }
