@@ -92,10 +92,15 @@ export class Resource {
       })
     }
 
-    let nextFn = req.domain.bind((function() {
-      // Determine what method to call next
+    let nextFn = req.domain.bind((function(err) {
       let method = null
-      if (beforeIndex < cls._before.length) {
+
+      // Determine what method to call next
+      if (err === false) {
+        // `next(false)` should stop the handler chain
+        method = finalize
+        cleanup = false
+      } else if (beforeIndex < cls._before.length) {
         method = cls._before[beforeIndex]
         beforeIndex += 1
       } else if (!routed) {
