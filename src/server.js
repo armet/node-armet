@@ -129,6 +129,14 @@ export function get() {
     // Setup a body parser to explode field references as x[y][z] to x.y.z
     server.use(parseObjectReference)
 
+    // Setup a NotFound handler
+    // NOTE: This prevents restify from sending a response on 404; keep
+    //       our errors clean
+    server.on("NotFound", function(req, res, err, next) {
+      res.send(404)
+      return next()
+    })
+
     // Setup a request exception handler
     server.on("uncaughtException", uncaughtException)
 
