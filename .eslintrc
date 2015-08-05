@@ -42,6 +42,7 @@
     "no-else-return": 2,
     "no-self-compare": 2,
     "no-throw-literal": 2,
+    "no-inner-declarations": 0,
     "no-sync": 2,
     "no-nested-ternary": 2,
     "operator-assignment": [2, "always"],

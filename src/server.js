@@ -226,7 +226,7 @@ export function run() {
 
     // Restart the worker that exited pre-maturely
     var terminating = false
-    cluster.on('exit', function(worker) {
+    cluster.on("exit", function(worker) {
       if (terminating) return
 
       log.warn(`worker ${worker.process.pid} has exited, restarting ...`)
