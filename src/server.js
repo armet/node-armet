@@ -114,7 +114,84 @@ export function get() {
 
     // TODO: Re-direct on case mismatch or trailing slash mismatch
 
-    // TODO: Setup CORS
+    // Setup CORS
+    // This is for simple request methods: GET POST HEAD, and actual requests, and
+    // redirects.
+    server.use(function(req, res, next) {
+      // Grab the origin header. If there's no origin, we need to gtfo.
+      // If the supplied origin is not on our allowed list, back out.
+      // This is shared between preflights and requests, so just do it here.
+      let origin = req.header("Origin")
+      if (origin == null) return next()
+      let allowedOrigins = config.get("origins")
+      let valid = false
+      if (allowedOrigins === "*") valid = true
+      else {
+        for (let allowedOrigin of allowedOrigins) {
+          if (_.endsWith(origin, allowedOring)) {
+            valid = true
+            break
+          }
+        }
+      }
+      if (!valid) return next()
+      res.header("Access-Control-Allow-Origin", origin)
+      res.header("Access-Control-Allow-Credentials", "true")
+
+      // Check to see if this a preflight request. If so, this isn't where we
+      // handle it.
+      if (req.method === "OPTIONS") return next()
+
+      // Add our exposed headers
+      let exposedHeaders = config.get("headers.response")
+      if (exposedHeaders.length > 0) {
+        res.header("Access-Control-Expose-Headers", exposedHeaders.join(","))
+      }
+
+      return next()
+    })
+
+    // Set up a global options route
+    // This will handle the preflight CORS issues.
+    server.opts(/.*/, function(req, res, next) {
+      // We've already taken care of the origin portion of the CORS preflight.
+      // Grab the requested method, and parse the requested headers.
+      let method = req.header("Access-Control-Request-Method")
+      let requestHeaders = req.header("Access-Control-Request-Headers") || ""
+      requestHeaders = requestHeaders
+        .toLowerCase().replace(/\s/g, "").split(",")
+
+      // Ensure that we have a valid handler for this method, for this route
+      if (!_.any(server.router.routes[method], route => {
+        return route.path.test(req._url.pathname)
+      })) {
+        res.send(200)
+        return next()
+      }
+
+      // Add our allowed method (just the method requested)
+      res.header("Access-Control-Allow-Methods", method)
+
+      // Add our max Cache time
+      res.header("Access-Control-Max-Age", config.maxCacheInterval)
+
+      // Check to make sure that the requested headers are part of our allowed
+      // headers.
+      let allowedHeaders = config.get("headers.request").map(
+        x => x.toLowerCase())
+
+      if (_.difference(requestHeaders, allowedHeaders).length !== 0) {
+        res.send(200)
+        return next()
+      }
+
+      // Add our allowed headers
+      res.header("Access-Control-Allow-Headers",
+        config.get("headers.request").join(","))
+
+      res.send(200)
+      return next()
+    })
 
     // Establish middleware (built-in)
     server.use(restify.acceptParser(server.acceptable))

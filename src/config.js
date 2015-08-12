@@ -18,6 +18,35 @@ let defaults = {
 
   // Trace each API request (yes/no)
   trace: (process.env.NODE_ENV !== "test"),
+
+  // Cross Origin Request Sharing (CORS) configuration
+
+  // Either a list of origins to allow access into the API, "*" to mean
+  // all, or null to mean none
+  // NOTE: Origin
+  origins: "*",
+
+  headers: {
+    // Headers that a client is allowed to send to the server
+    // in the request
+    // NOTE: Access-Control-Allow-Headers
+    request: [
+      "Content-Type",
+      "Authorization",
+      "Range",
+      "Accept",
+      "Origin"
+    ],
+
+    // Headers that a client is allowed to read from the server in
+    // the response
+    // NOTE: Access-Control-Expose-Headers
+    response: [
+      "Location",
+      "Content-Type",
+      "Content-Range"
+    ]
+  }
 }
 
 // Setup default configuration
