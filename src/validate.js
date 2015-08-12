@@ -1,6 +1,9 @@
 import _ from "lodash"
 import {ValidationError, HTTPError} from "./errors"
 
+// TODO: We should probably allow async validators.. we should probably
+//       use the async.js library to help with rewriting this to allow
+
 /**
  * @param {Object} item - The object to run a set of validators against;
  *                        normally would be `req.body`.
@@ -8,7 +11,7 @@ import {ValidationError, HTTPError} from "./errors"
  * @param {Object} context - Optional context to be given along with the item (
  *                           but will not allow mutation).
  */
-export default async function validate(
+export default function validate(
   item={},
   schema,
   context={},
@@ -46,14 +49,14 @@ export default async function validate(
         // If we have an object, we need to recurse into this
         // sub-object for validation
         if (_.isPlainObject(fn)) {
-          result[key] = await validate(val, fn, context, result, key)
+          result[key] = validate(val, fn, context, result, key)
         } else if (fn === true) {
           // No validation is performed; pass-through to the result (only
           // if it isn't undefined)
           result[key] = val
         } else {
           // Attempt to run the validator to check and clean the value
-          result[key] = await fn.call(_.extend(_rootItem, context), val)
+          result[key] = fn.call(_.extend(_rootItem, context), val)
         }
       } catch (err) {
         if (err instanceof ValidationError) {
