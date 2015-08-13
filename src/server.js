@@ -162,8 +162,9 @@ export function get() {
         .toLowerCase().replace(/\s/g, "").split(",")
 
       // Ensure that we have a valid handler for this method, for this route
+      var pathname = require("url").parse(req.url).pathname
       if (!_.any(server.router.routes[method], route => {
-        return route.path.test(req._url.pathname)
+        return route.path.test(pathname)
       })) {
         res.send(200)
         return next()
