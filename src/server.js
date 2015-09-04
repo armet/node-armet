@@ -67,10 +67,6 @@ function uncaughtException(req, res, route, err) {
   function inner() {
     // Release the database connection (if it has been acquired)
     Promise.resolve(db.end()).then(function() {
-      if (res.headersSent) {
-        return
-      }
-
       if (err instanceof HTTPError) {
         // Yes return the proper validation error
         statusCode = err.statusCode
@@ -78,6 +74,10 @@ function uncaughtException(req, res, route, err) {
       } else {
         // Log the exception
         log.error(err)
+      }
+
+      if (res.headersSent) {
+        return
       }
 
       // Trace the request
