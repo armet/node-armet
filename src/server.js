@@ -221,9 +221,11 @@ export function get() {
     // Trace the request
     server.on("after", function(req, res) {
       // Release the database connection (if it has been acquired)
-      Promise.resolve(db.end()).then(function() {
-        // Trace the request
-        trace(req, res.statusCode)
+      req.domain.run(function() {
+        Promise.resolve(db.end()).then(function() {
+          // Trace the request
+          trace(req, res.statusCode)
+        })
       })
     })
   }
