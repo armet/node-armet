@@ -84,14 +84,6 @@ export class Resource {
     let routed = false
     let cleanup = false
 
-    function finalize() {
-      // TODO: This also happens in the uncaughtException handler;
-      //       perhaps there is a way to generalize?
-      Promise.resolve(db.end()).then(function() {
-        return next()
-      })
-    }
-
     let nextFn = req.domain.bind((function(err) {
       let method = null
 
@@ -110,7 +102,7 @@ export class Resource {
         method = cls._after[afterIndex]
         afterIndex += 1
       } else if (!cleanup) {
-        method = finalize
+        method = next
         cleanup = false
       }
 

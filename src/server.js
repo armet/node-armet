@@ -220,7 +220,11 @@ export function get() {
 
     // Trace the request
     server.on("after", function(req, res) {
-      trace(req, res.statusCode)
+      // Release the database connection (if it has been acquired)
+      Promise.resolve(db.end()).then(function() {
+        // Trace the request
+        trace(req, res.statusCode)
+      })
     })
   }
 
