@@ -90,7 +90,7 @@ export class Resource {
       // Determine what method to call next
       if (err === false) {
         // `next(false)` should stop the handler chain
-        method = finalize
+        method = next
         cleanup = false
       } else if (beforeIndex < cls._before.length) {
         method = cls._before[beforeIndex]
