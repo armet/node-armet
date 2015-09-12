@@ -84,13 +84,19 @@ export class Resource {
     let routed = false
     let cleanup = false
 
+    function finalize() {
+      process.nextTick(function() {
+        next()
+      })
+    }
+
     let nextFn = req.domain.bind((function(err) {
       let method = null
 
       // Determine what method to call next
       if (err === false) {
         // `next(false)` should stop the handler chain
-        method = next
+        method = finalize
         cleanup = false
       } else if (beforeIndex < cls._before.length) {
         method = cls._before[beforeIndex]
@@ -102,7 +108,7 @@ export class Resource {
         method = cls._after[afterIndex]
         afterIndex += 1
       } else if (!cleanup) {
-        method = next
+        method = finalize
         cleanup = false
       }
 
