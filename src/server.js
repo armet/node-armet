@@ -199,6 +199,9 @@ export function get() {
     server.use(restify.queryParser())
     server.use(restify.authorizationParser())
     server.use(restify.dateParser())
+    server.use(restify.multipartBodyParser({
+      maxFieldsSize: 30 * 1024 * 1024  // 30 MiB
+    }))
     server.use(restify.bodyParser({
       maxBodySize: 0,
       mapParams: false,
