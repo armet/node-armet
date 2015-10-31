@@ -24,3 +24,9 @@ for (let name of Object.keys(errors)) {
 
 module.exports.validators = require("./validators")
 module.exports.validate = require("./validate")
+
+// Event emitter
+var emitter = require("./hub")
+module.exports.on = emitter.on.bind(emitter)
+module.exports.off = emitter.removeListener.bind(emitter)
+module.exports.emit = emitter.emit.bind(emitter)

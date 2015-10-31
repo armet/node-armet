@@ -8,6 +8,7 @@ import config from "./config"
 import log from "./log"
 import {db} from "bardo"
 import {HTTPError} from "./errors"
+import hub from "./hub"
 
 // TODO: Should this move elsewhere?
 function parseObjectReference(req, res, next) {
@@ -67,12 +68,14 @@ function uncaughtException(req, res, route, err) {
   function inner() {
     // Release the database connection (if it has been acquired)
     Promise.resolve(db.end()).then(function() {
+      let exc = null
       if (err instanceof HTTPError) {
         // Yes return the proper validation error
         statusCode = err.statusCode
         body = err.body
       } else {
         // Log the exception
+        exc = err
         log.error(err)
       }
 
@@ -85,6 +88,9 @@ function uncaughtException(req, res, route, err) {
 
       // Send the error response back to the client
       res.send(statusCode, body)
+
+      // Emit the 'after' event
+      hub.emit("after", req, res, exc)
     })
   }
 
@@ -226,6 +232,9 @@ export function get() {
         Promise.resolve(db.end()).then(function() {
           // Trace the request
           trace(req, res.statusCode)
+
+          // Emit the 'after' event
+          hub.emit("after", req, res)
         })
       })
     })
