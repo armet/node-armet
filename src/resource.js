@@ -1,5 +1,4 @@
 import _ from "lodash"
-import Str from "underscore.string"
 import path from "path"
 // import sql from "sql-bricks-postgres"
 import {db} from "bardo"
@@ -23,7 +22,7 @@ export function mount(path) {
 export class Resource {
   static mount(base="/") {
     // Dasherize the name of this class
-    let name = Str.dasherize(Str.camelize(this.name, true))
+    let name = _.kebabCase(_.camelCase(this.name, true))
     let url = path.join(base, name)
 
     // NOTE: It'd be nice if resitfy supported a way to bind a handler to

@@ -1,32 +1,38 @@
-module.exports = {}
+import server_ from "./server"
+export const run = server_.run
 
-module.exports.run = require("./server").run
-module.exports.configure = require("./config").configure
-module.exports.util = require("./util")
+import resource_ from "./resource"
+export const Resource = resource_.Resource
+export const mount = resource_.mount
 
-var res = require("./resource")
-module.exports.Resource = res.Resource
-module.exports.mount = res.mount
+import route_ from "./route"
+export const head = route_.head
+export const get = route_.get
+export const post = route_.post
+export const put = route_.put
+export const patch = route_.patch
+export const del = route_.del
 
-var route = require("./route")
-for (let name of Object.keys(route)) {
-  if (name !== "default") {
-    module.exports[name] = route[name]
-  }
+import errors from "./errors"
+export errors from "./errors"
+
+import validators_ from "./validators"
+import validate_ from "./validate"
+export const validators = validators_
+export const validate = validate_
+
+import hub_ from "./hub"
+export const on = hub_.on.bind(hub_)
+export const off = hub_.removeListener.bind(hub_)
+export const emit = hub_.emit.bind(hub_)
+
+export default {
+  run,
+  Resource,
+  mount,
+  head, get, post, put, patch, del,
+  errors,
+  validators: validators_,
+  validate: validate_,
+  on, off, emit,
 }
-
-var errors = require("./errors")
-for (let name of Object.keys(errors)) {
-  if (name !== "default") {
-    module.exports[name] = errors[name]
-  }
-}
-
-module.exports.validators = require("./validators")
-module.exports.validate = require("./validate")
-
-// Event emitter
-var emitter = require("./hub")
-module.exports.on = emitter.on.bind(emitter)
-module.exports.off = emitter.removeListener.bind(emitter)
-module.exports.emit = emitter.emit.bind(emitter)

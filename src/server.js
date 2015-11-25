@@ -87,7 +87,11 @@ function uncaughtException(req, res, route, err) {
       trace(req, statusCode)
 
       // Send the error response back to the client
-      res.send(statusCode, body)
+      if (body == null) {
+        res.send(statusCode)
+      } else {
+        res.send(statusCode, body)
+      }
 
       // Emit the 'after' event
       hub.emit("after", req, res, exc)
@@ -134,7 +138,7 @@ export function get() {
       if (allowedOrigins === "*") valid = true
       else {
         for (let allowedOrigin of allowedOrigins) {
-          if (_.endsWith(origin, allowedOring)) {
+          if (_.endsWith(origin, allowedOrigin)) {
             valid = true
             break
           }

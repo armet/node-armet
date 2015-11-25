@@ -1,4 +1,5 @@
-require("babel/register")
+// TODO: Convert to using gulpfile.babel.js
+require("babel-core/register")
 
 var _ = require("lodash")
 var gulp = require("gulp")
@@ -28,7 +29,7 @@ gulp.task("test", function() {
     }))
 })
 
-gulp.task('watch', function() {
+gulp.task("watch", function() {
   gulp.watch(["./src/**/*.js"], function() {
     runSequence("build", "dist")
   })

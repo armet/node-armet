@@ -11,7 +11,7 @@ import {ValidationError, HTTPError} from "./errors"
  * @param {Object} context - Optional context to be given along with the item (
  *                           but will not allow mutation).
  */
-export default function validate(
+export default async function validate(
   item={},
   schema,
   context={},
@@ -49,14 +49,14 @@ export default function validate(
         // If we have an object, we need to recurse into this
         // sub-object for validation
         if (_.isPlainObject(fn)) {
-          result[key] = validate(val, fn, context, result, key)
+          result[key] = await validate(val, fn, context, result, key)
         } else if (fn === true) {
           // No validation is performed; pass-through to the result (only
           // if it isn't undefined)
           result[key] = val
         } else {
           // Attempt to run the validator to check and clean the value
-          result[key] = fn.call(_.extend(_rootItem, context), val)
+          result[key] = await fn.call(_.extend(_rootItem, context), val)
         }
       } catch (err) {
         if (err instanceof ValidationError) {
