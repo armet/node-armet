@@ -75,6 +75,7 @@
     "babel-plugin-transform-strict-mode": "^6.2.0",
     "babel-plugin-transform-undefined-to-void": "^6.1.18",
     "babel-plugin-typecheck": "^3.5.0",
+    "babel-preset-launchbadge-node": "git://github.com/launchbadge/babel-preset-launchbadge-node.git",
     "del": "^2.2.0",
     "eslint": "^1.10.1",
     "gulp": "^3.9.0",
