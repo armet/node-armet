@@ -115,7 +115,7 @@ export class Resource {
       method = req.domain.bind(method)
 
       // Call the method
-      Promise.resolve(method.call(this, req, res, nextFn)).catch(function(err) {
+      return Promise.resolve(method.call(this, req, res, nextFn)).catch(function(err) {
         // Raise the error upwards (if this was an async method)
         throw err
       })
