@@ -82,7 +82,7 @@ async function validate(
   }
 
   // Return the fully cleaned item
-  return _.omit(_.pick(result, (val) => {
+  return _.omit(_.pickBy(result, (val) => {
     return val != null
   }), _.keys(context))
 }
