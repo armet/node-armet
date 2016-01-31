@@ -11,7 +11,7 @@ import {ValidationError, HTTPError} from "./errors"
  * @param {Object} context - Optional context to be given along with the item (
  *                           but will not allow mutation).
  */
-export default async function validate(
+async function validate(
   item={},
   schema,
   context={},
@@ -86,3 +86,5 @@ export default async function validate(
     return val != null
   }), _.keys(context))
 }
+
+export default validate;
