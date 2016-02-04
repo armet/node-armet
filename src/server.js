@@ -173,7 +173,7 @@ export function get() {
 
       // Ensure that we have a valid handler for this method, for this route
       var pathname = require("url").parse(req.url).pathname
-      if (!_.any(server.router.routes[method], route => {
+      if (!_.some(server.router.routes[method], route => {
         return route.path.test(pathname)
       })) {
         res.send(200)
